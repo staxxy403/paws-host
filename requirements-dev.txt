@@ -1,0 +1,13 @@
+# This requirements file is for local development,
+# all libraries used in the project are stored here.
+
+invoke
+python-dotenv
+
+fastapi
+httpx
+sqlalchemy
+alembic
+redis
+
+aiogram

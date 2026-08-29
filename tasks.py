@@ -15,7 +15,7 @@ def is_in_container() -> bool:
 
 def run_cmd(c, container, cmd, use_compose=True):
     full_cmd = f'docker compose {cmd}' if use_compose else cmd
-    
+
     if not is_in_container():
         wrap = f'incus exec {container} -- sh -c \'cd /root/pawshost && {full_cmd}\''
         c.run(wrap, pty=True)
@@ -57,9 +57,8 @@ def db_shell(c, container='pawshost', db='pawshost'):
 
 @task
 def alembic_upgrade(c, container='pawshost'):
-    run_cmd(c, container, 'exec internal-api alembic upgrade head')
+    run_cmd(c, container, 'exec api alembic upgrade head')
 
 @task
 def alembic_revision(c, container='pawshost', m=''):
-    run_cmd(c, container, f'exec internal-api alembic revision --autogenerate -m="{m}"')
-                             
+    run_cmd(c, container, f'exec api alembic revision --autogenerate -m="{m}"')
