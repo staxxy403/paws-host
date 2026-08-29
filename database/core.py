@@ -24,8 +24,12 @@ class Node(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(50), unique=True)
     country_code: Mapped[str] = mapped_column(String(2))
+
+    parent_interface: Mapped[str] = mapped_column(String(20), default="eth0")
+
     ip_address: Mapped[str] = mapped_column(String(50))
     api_port: Mapped[int] = mapped_column(default=8443)
+
     is_active: Mapped[bool] = mapped_column(default=True)
 
     max_ram_gb: Mapped[int] = mapped_column()
