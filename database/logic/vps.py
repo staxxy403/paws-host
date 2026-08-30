@@ -7,6 +7,7 @@ from shared.enums import VPSStatus
 from database.core import VPS, Node
 from database.core import async_session
 
+
 async def get(vps_id: int) -> VPS | None:
     '''Get VPS by ID with its relationships'''
     stmt = (

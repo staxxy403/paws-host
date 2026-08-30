@@ -96,13 +96,24 @@ class VPS(Base):
     tariff_id: Mapped[int] = mapped_column(ForeignKey('tariffs.id'))
     tariff: Mapped['Tariff'] = relationship(back_populates='vps_list')
 
+class OSFamily(Base):
+    __tablename__ = 'os_families'
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    display_name: Mapped[str] = mapped_column(String(50))
+
+    os_list: Mapped[list['OS']] = relationship(back_populates='family')
+
 class OS(Base):
     __tablename__ = 'os'
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
-    display_name: Mapped[str] = mapped_column(String(50))
+    display_version: Mapped[str] = mapped_column(String(50))
     incus_name: Mapped[str] = mapped_column(String(50))
+
+    family_id: Mapped[int] = mapped_column(ForeignKey('os_families.id'))
+    family: Mapped['OSFamily'] = relationship(back_populates='os_list')
 
     vps: Mapped[list['VPS']] = relationship(back_populates='os')
 
