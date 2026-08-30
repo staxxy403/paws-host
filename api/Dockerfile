@@ -12,7 +12,7 @@ FROM python:3.14-slim
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
-COPY --from=builder /deps/ /usr/local/lib/python3.12/site-packages/
+COPY --from=builder /deps/ /usr/local/lib/python3.14/site-packages/
 COPY --from=builder /deps/bin/ /usr/local/bin/
 
 WORKDIR /app
