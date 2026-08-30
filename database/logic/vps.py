@@ -1,10 +1,10 @@
 import uuid
 from sqlalchemy import select
-from sqlalchemy.orm import selectinload, joinedload
+from sqlalchemy.orm import joinedload
 
 from shared.enums import VPSStatus
 
-from database.core import VPS, Node
+from database.core import VPS, Node, OS
 from database.core import async_session
 
 
@@ -17,8 +17,8 @@ async def get(vps_id: int) -> VPS | None:
             joinedload(VPS.ip_address),
             joinedload(VPS.node),
             joinedload(VPS.owner),
-            joinedload(VPS.os),
 
+            joinedload(VPS.os).joinedload(OS.family),
             joinedload(VPS.node).joinedload(Node.location),
             joinedload(VPS.node).joinedload(Node.category),
         )
