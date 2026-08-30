@@ -8,7 +8,7 @@ from database.core import VPS, Node, IPAddress
 from database.core import async_session
 
 
-async def get_node(node_id: int) -> Node | None:
+async def get(node_id: int) -> Node | None:
     '''Get Node by ID with its relationships'''
     stmt = (
         select(Node)
@@ -27,7 +27,7 @@ async def get_node(node_id: int) -> Node | None:
         return await session.scalar(stmt)
 
 
-async def get_node_used_ram(node_id: int) -> int:
+async def get_used_ram(node_id: int) -> int:
     '''Returns RAM used by Node (count only VPS with status ACTIVE and CREATING)'''
     stmt = (
         select(func.sum(VPS.ram_gb))
@@ -43,7 +43,7 @@ async def get_node_used_ram(node_id: int) -> int:
         return used_ram or 0
 
 
-async def find_available_node(location_id: int, category_id: int, required_ram_gb: int) -> Node | None:
+async def get_available(location_id: int, category_id: int, required_ram_gb: int) -> Node | None:
     '''Returns Node with enough amount of resources to deploy a new VPS'''
     stmt = (
         select(Node)
@@ -59,7 +59,7 @@ async def find_available_node(location_id: int, category_id: int, required_ram_g
         nodes = await session.scalars(stmt)
 
         for node in nodes:
-            used_ram = await get_node_used_ram(node.id)
+            used_ram = await get_used_ram(node.id)
             free_ram = node.max_ram_gb - used_ram
 
             if free_ram >= required_ram_gb:

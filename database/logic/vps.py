@@ -7,7 +7,7 @@ from shared.enums import VPSStatus
 from database.core import VPS, Node
 from database.core import async_session
 
-async def get_vps(vps_id: int) -> VPS | None:
+async def get(vps_id: int) -> VPS | None:
     '''Get VPS by ID with its relationships'''
     stmt = (
         select(VPS)
@@ -26,7 +26,7 @@ async def get_vps(vps_id: int) -> VPS | None:
         return await session.scalar(stmt)
 
 
-async def create_vps(
+async def create(
     user_id: int,
     node_id: int,
     ip_id: int,
@@ -60,7 +60,7 @@ async def create_vps(
         return new_vps
 
 
-async def update_vps_status(vps_id: int, new_status: VPSStatus) -> None:
+async def update_status(vps_id: int, new_status: VPSStatus) -> None:
     '''Update VPS status'''
     async with async_session() as session:
         vps = await session.get(VPS, vps_id)
