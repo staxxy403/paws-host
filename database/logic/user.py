@@ -1,10 +1,6 @@
-import uuid
 from sqlalchemy import select
-from sqlalchemy.orm import selectinload, joinedload
 
-from shared.enums import VPSStatus
-
-from database.core import VPS, Node, User
+from database.core import User
 from database.core import async_session
 
 
@@ -22,6 +18,7 @@ async def get_user_by_tg_id(telegram_id: int) -> User | None:
 
 
 async def create_user(telegram_id: int) -> User:
+    '''Create new User'''
     new_user = User(telegram_id=telegram_id)
     async with async_session() as session:
         session.add(new_user)
