@@ -1,5 +1,6 @@
 import time
 import os
+import uuid
 
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -19,7 +20,7 @@ class Base(DeclarativeBase):
 class User(Base):
     __tablename__ = 'users'
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=lambda: uuid.uuid7())
     telegram_id: Mapped[int] = mapped_column(unique=True, index=True)
     balance: Mapped[int] = mapped_column(default=0)
     registered_at: Mapped[int] = mapped_column(default=lambda: int(time.time()))
@@ -70,9 +71,7 @@ class IPAddress(Base):
 class VPS(Base):
     __tablename__ = 'vps'
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    uuid: Mapped[str] = mapped_column(unique=True)
-
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=lambda: uuid.uuid7())
     status: Mapped[VPSStatus] = mapped_column(default=VPSStatus.CREATING)
 
     cpu_cores: Mapped[int] = mapped_column()
@@ -81,7 +80,7 @@ class VPS(Base):
 
     expire_at: Mapped[int] = mapped_column()
 
-    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey('users.id'))
     owner: Mapped['User'] = relationship(back_populates='vps_list')
 
     node_id: Mapped[int] = mapped_column(ForeignKey('nodes.id'))
