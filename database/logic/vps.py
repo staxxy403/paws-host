@@ -1,6 +1,7 @@
 import uuid
+from typing import Sequence
 from sqlalchemy import select
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 
 from shared.enums import VPSStatus
 
@@ -17,6 +18,8 @@ async def get(vps_id: int) -> VPS | None:
             joinedload(VPS.ip_address),
             joinedload(VPS.node),
             joinedload(VPS.owner),
+            joinedload(VPS.tariff),
+
 
             joinedload(VPS.os).joinedload(OS.family),
             joinedload(VPS.node).joinedload(Node.location),
@@ -25,6 +28,26 @@ async def get(vps_id: int) -> VPS | None:
     )
     async with async_session() as session:
         return await session.scalar(stmt)
+
+
+async def get_list_by_user_id(user_id: int) -> Sequence[VPS]:
+    '''Get all VPS of User by ID with its relationships'''
+    stmt = (
+        select(VPS)
+        .where(VPS.user_id == user_id)
+        .options(
+            joinedload(VPS.ip_address),
+            joinedload(VPS.node),
+            joinedload(VPS.tariff),
+
+            joinedload(VPS.os).joinedload(OS.family),
+            joinedload(VPS.node).joinedload(Node.location),
+            joinedload(VPS.node).joinedload(Node.category),
+        )
+    )
+    async with async_session() as session:
+        res = await session.scalars(stmt)
+        return res.all()
 
 
 async def create(
