@@ -9,5 +9,6 @@ httpx
 sqlalchemy
 alembic
 redis
+arq
 
 aiogram

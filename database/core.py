@@ -1,6 +1,14 @@
 import time
+import os
+
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+
+DATABASE_URL = os.getenv('DATABASE_URL')
+
+engine = create_async_engine(DATABASE_URL)
+async_session = async_sessionmaker(engine, expire_on_commit=False)
 
 from shared.enums import VPSStatus
 
