@@ -3,7 +3,7 @@ from sqlalchemy.orm import selectinload, joinedload
 
 from shared.enums import VPSStatus
 
-from database.core import VPS
+from database.core import VPS, Node
 from database.core import async_session
 
 async def get_vps(vps_id: int) -> VPS | None:
@@ -16,6 +16,9 @@ async def get_vps(vps_id: int) -> VPS | None:
             joinedload(VPS.node),
             joinedload(VPS.owner),
             joinedload(VPS.os),
+
+            joinedload(VPS.node).joinedload(Node.location),
+            joinedload(VPS.node).joinedload(Node.category),
         )
     )
     async with async_session() as session:
