@@ -31,7 +31,6 @@ class Node(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(50), unique=True)
-    country_code: Mapped[str] = mapped_column(String(2))
 
     parent_interface: Mapped[str] = mapped_column(String(20), default="eth0")
 
@@ -46,6 +45,12 @@ class Node(Base):
 
     vps_list: Mapped[list['VPS']] = relationship(back_populates='node')
     ip_pool: Mapped[list['IPAddress']] = relationship(back_populates='node')
+
+    location_id: Mapped[int] = mapped_column(ForeignKey('locations.id'))
+    location: Mapped['Location'] = relationship(back_populates='nodes')
+
+    category_id: Mapped[int] = mapped_column(ForeignKey('categories.id'))
+    category: Mapped['Category'] = relationship(back_populates='nodes')
 
 class IPAddress(Base):
     __tablename__ = 'ip_addresses'
@@ -88,6 +93,9 @@ class VPS(Base):
     os_id: Mapped[int] = mapped_column(ForeignKey('os.id'))
     os: Mapped['OS'] = relationship(back_populates='vps')
 
+    tariff_id: Mapped[int] = mapped_column(ForeignKey('tariffs.id'))
+    tariff: Mapped['Tariff'] = relationship(back_populates='vps_list')
+
 class OS(Base):
     __tablename__ = 'os'
 
@@ -97,3 +105,37 @@ class OS(Base):
     incus_name: Mapped[str] = mapped_column(String(50))
 
     vps: Mapped[list['VPS']] = relationship(back_populates='os')
+
+class Tariff(Base):
+    __tablename__ = 'tariffs'
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+
+    disk_gb: Mapped[int] = mapped_column()
+    ram_gb: Mapped[int] = mapped_column()
+    cpu_cores: Mapped[int] = mapped_column()
+
+    price: Mapped[int] = mapped_column()
+    is_active: Mapped[bool] = mapped_column(default=True)
+
+    category_id: Mapped[int] = mapped_column(ForeignKey('categories.id'))
+    category: Mapped['Category'] = relationship(back_populates='tariffs')
+
+    vps_list: Mapped[list[VPS]] = relationship(back_populates='tariff')
+
+class Location(Base):
+    __tablename__ = 'locations'
+    id: Mapped[int] = mapped_column(primary_key=True)
+    display_name: Mapped[str] = mapped_column(String(50))
+    country_code: Mapped[str] = mapped_column(String(2))
+
+    nodes: Mapped[list['Node']] = relationship(back_populates='location')
+
+class Category(Base):
+    __tablename__ = 'categories'
+    id: Mapped[int] = mapped_column(primary_key=True)
+    display_name: Mapped[str] = mapped_column(String(50))
+    cpu_desc: Mapped[str] = mapped_column(String(100))
+
+    nodes: Mapped[list['Node']] = relationship(back_populates='category')
+    tariffs: Mapped[list['Tariff']] = relationship(back_populates='category')
