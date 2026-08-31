@@ -51,7 +51,7 @@ async def get_list_by_user_id(user_id: int) -> Sequence[VPS]:
 
 
 async def create(
-    user_id: int,
+    user_id: uuid.UUID,
     node_id: int,
     ip_id: int,
     os_id: int,

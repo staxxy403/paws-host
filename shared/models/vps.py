@@ -22,3 +22,9 @@ class VPSRead(BaseSchema):
 
 class VPSListResponse(BaseSchema):
     vps: list[VPSRead]
+
+class VPSPurchaseRequest(BaseSchema):
+    tariff_id: int
+    location_id: int
+    os_id: int
+    months: int
