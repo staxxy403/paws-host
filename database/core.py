@@ -111,6 +111,13 @@ class OS(Base):
 
     vps: Mapped[list['VPS']] = relationship(back_populates='os')
 
+    @property
+    def full_name(self) -> str:
+        '''Combines name and version (for frontend)'''
+        if self.family:
+            return f"{self.family.display_name} {self.display_version}"
+        return self.display_version
+
 class Tariff(Base):
     __tablename__ = 'tariffs'
 
