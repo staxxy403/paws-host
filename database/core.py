@@ -73,11 +73,6 @@ class VPS(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=lambda: uuid.uuid7())
     status: Mapped[VPSStatus] = mapped_column(default=VPSStatus.CREATING)
-
-    cpu_cores: Mapped[int] = mapped_column()
-    ram_gb: Mapped[int] = mapped_column()
-    disk_gb: Mapped[int] = mapped_column()
-
     expire_at: Mapped[int] = mapped_column()
 
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey('users.id'))
