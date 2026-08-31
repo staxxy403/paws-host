@@ -56,9 +56,6 @@ async def create(
     ip_id: int,
     os_id: int,
     tariff_id: int,
-    cpu_cores: int,
-    ram_gb: int,
-    disk_gb: int,
     expire_at: int
 ) -> VPS:
     '''Create new VPS with status = VPSStatus.CREATING'''
