@@ -1,3 +1,4 @@
+import time
 import uuid
 
 from database.logic import vps as vps_logic
@@ -17,7 +18,7 @@ from shared.models.responses import success_response
 SECONDS_IN_MONTH = 30 * 24 * 60 * 60
 
 
-async def get_list_vps_logic(user_id: uuid.UUID):
+async def get_list_vps_logic(user_id: uuid.UUID) -> VPSListResponse:
     vps_list = await vps_logic.get_list_by_user_id(user_id=user_id)
 
     return success_response(
@@ -34,10 +35,11 @@ async def buy_vps_logic(user_id: uuid.UUID, tariff_id: int, location_id: int, os
 
     if months < 1 or months > 12:
         raise HTTPException(400, 'Invalid billing period')
-    total_period = months * SECONDS_IN_MONTH
+
+    expire_at = int(time.time()) + (months * SECONDS_IN_MONTH)
     total_price = months * tariff.price
 
-    location = location_logic.get_by_id(location_id=location_id)
+    location = await location_logic.get_by_id(location_id=location_id)
     if not location:
         raise HTTPException(400, f'Location {location_id} not found')
 
@@ -50,7 +52,7 @@ async def buy_vps_logic(user_id: uuid.UUID, tariff_id: int, location_id: int, os
         raise HTTPException(400, f'OS {os_id} not found')
 
     try:
-        await finance_logic.charge_user(user_id=user_id, amount=tariff.price)
+        await finance_logic.charge_user(user_id=user_id, amount=total_price)
     except ValueError as e:
         raise HTTPException(400, str(e))
 
@@ -65,7 +67,7 @@ async def buy_vps_logic(user_id: uuid.UUID, tariff_id: int, location_id: int, os
         ip_id = ip.id,
         os_id = os.id,
         tariff_id=tariff_id,
-        expire_at=total_period,
+        expire_at=expire_at,
     )
 
     return vps
