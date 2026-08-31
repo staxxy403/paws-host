@@ -90,6 +90,10 @@ class VPS(Base):
     tariff_id: Mapped[int] = mapped_column(ForeignKey('tariffs.id'))
     tariff: Mapped['Tariff'] = relationship(back_populates='vps_list')
 
+    @property
+    def location(self) -> 'Location':
+        return self.node.location
+
 class OSFamily(Base):
     __tablename__ = 'os_families'
 
