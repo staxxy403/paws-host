@@ -1,17 +1,17 @@
-import time
 import os
+import time
 import uuid
 
 from sqlalchemy import ForeignKey, String
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+
+from shared.enums import TransactionStatus, TransactionType, VPSStatus
 
 DATABASE_URL = os.getenv('DATABASE_URL')
 
 engine = create_async_engine(DATABASE_URL)
 async_session = async_sessionmaker(engine, expire_on_commit=False)
-
-from shared.enums import VPSStatus
 
 
 class Base(DeclarativeBase):
@@ -26,6 +26,7 @@ class User(Base):
     registered_at: Mapped[int] = mapped_column(default=lambda: int(time.time()))
 
     vps_list: Mapped[list['VPS']] = relationship(back_populates='owner')
+    transactions: Mapped[list['Transaction']] = relationship(back_populates='user')
 
 class Node(Base):
     __tablename__ = 'nodes'
@@ -155,3 +156,21 @@ class Category(Base):
 
     nodes: Mapped[list['Node']] = relationship(back_populates='category')
     tariffs: Mapped[list['Tariff']] = relationship(back_populates='category')
+
+class Transaction(Base):
+    __tablename__ = 'transactions'
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=lambda: uuid.uuid7())
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey('users.id'))
+
+    amount: Mapped[int] = mapped_column(nullable=False)
+    type: Mapped[TransactionType] = mapped_column(nullable=False)
+    status: Mapped[TransactionStatus] = mapped_column(default=TransactionStatus.PENDING)
+    description: Mapped[str | None] = mapped_column(nullable=True)
+
+    provider_payment_id: Mapped[str | None] = mapped_column(unique=True, nullable=True)
+    provider: Mapped[str | None] = mapped_column(nullable=True)
+
+    created_at: Mapped[int] = mapped_column(default=lambda: int(time.time()))
+    updated_at: Mapped[int] = mapped_column(default=lambda: int(time.time()), onupdate=lambda: int(time.time()))
+
+    user: Mapped['User'] = relationship(back_populates='transactions')
