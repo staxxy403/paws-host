@@ -8,3 +8,4 @@ venv/
 uv.lock
 
 secrets/
+.VSCodeCounter/
