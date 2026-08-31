@@ -1,9 +1,13 @@
 import logging
+from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse
+from arq import create_pool
+from fastapi import APIRouter, FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 
+from api.routes import routes_router
+from shared.configs.redis import arq_redis_settings
 from shared.models import APIResponse
 
 logging.basicConfig(
@@ -14,7 +18,17 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI()
+main_router = APIRouter(prefix='/api/v1')
+main_router.include_router(routes_router)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    app.state.arq_pool = await create_pool(arq_redis_settings)
+    yield
+    await app.state.arq_pool.close()
+
+app = FastAPI(lifespan=lifespan)
+app.include_router(main_router)
 
 
 @app.exception_handler(HTTPException)
