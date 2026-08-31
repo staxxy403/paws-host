@@ -30,12 +30,14 @@ async def get(node_id: int) -> Node | None:
 async def get_used_ram(node_id: int) -> int:
     '''Returns RAM used by Node (count only VPS with status ACTIVE and CREATING)'''
     stmt = (
-        select(func.sum(VPS.ram_gb))
-        .where(
-            VPS.node_id == node_id,
-            VPS.status.in_([VPSStatus.ACTIVE, VPSStatus.CREATING])
+            select(func.sum(Tariff.ram_gb))
+            .join(VPS.tariff)
+            .where(
+                VPS.node_id == node_id,
+                VPS.status.in_([VPSStatus.ACTIVE, VPSStatus.CREATING])
+            )
         )
-    )
+
 
     async with async_session() as session:
         used_ram = await session.scalar(stmt)
