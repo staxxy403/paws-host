@@ -61,15 +61,11 @@ async def create(
     '''Create new VPS with status = VPSStatus.CREATING'''
 
     new_vps = VPS(
-        uuid=str(uuid.uuid4()),
         user_id=user_id,
         node_id=node_id,
         ip_id=ip_id,
         os_id=os_id,
         tariff_id=tariff_id,
-        cpu_cores=cpu_cores,
-        ram_gb=ram_gb,
-        disk_gb=disk_gb,
         expire_at=expire_at,
         status=VPSStatus.CREATING,
     )
