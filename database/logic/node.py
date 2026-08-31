@@ -4,7 +4,7 @@ from sqlalchemy.orm import selectinload, joinedload
 
 from shared.enums import VPSStatus
 
-from database.core import VPS, Node, IPAddress
+from database.core import VPS, Node, IPAddress, Tariff
 from database.core import async_session
 
 
