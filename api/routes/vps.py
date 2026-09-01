@@ -32,7 +32,8 @@ async def api_buy_vps(
         tariff_id=body.tariff_id,
         location_id=body.location_id,
         os_id=body.os_id,
-        months=body.months
+        months=body.months,
+        arq=arq,
     )
     return success_response(VPSRead.model_validate(vps))
 
