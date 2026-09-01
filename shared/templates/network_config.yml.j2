@@ -1,0 +1,15 @@
+version: 2
+ethernets:
+  eth0:
+    match:
+      name: "en*"
+    addresses:
+      - {{ ip_address }}/32
+    routes:
+      - to: 0.0.0.0/0
+        via: 169.254.0.1
+        on-link: true
+    nameservers:
+      addresses:
+        - 1.1.1.1
+        - 8.8.8.8

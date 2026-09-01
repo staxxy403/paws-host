@@ -37,7 +37,7 @@ def down(c, container='pawshost'):
 
 @task
 def restart(c, container='pawshost'):
-    run_cmd(c, container, 'restart bot api')
+    run_cmd(c, container, 'restart api worker')
 
 @task
 def restart_all(c, container='pawshost'):

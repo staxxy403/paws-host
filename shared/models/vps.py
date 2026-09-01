@@ -18,7 +18,6 @@ class VPSRead(BaseSchema):
     ip_id: int
     os_id: int
     tariff_id: int
-    location_id: int
 
     ip_address: IPAddressRead
     os: OSRead

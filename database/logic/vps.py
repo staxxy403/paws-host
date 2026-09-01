@@ -9,7 +9,7 @@ from database.core import VPS, Node, OS
 from database.core import async_session
 
 
-async def get(vps_id: int) -> VPS | None:
+async def get_by_id(vps_id: int) -> VPS | None:
     '''Get VPS by ID with its relationships'''
     stmt = (
         select(VPS)
@@ -74,7 +74,9 @@ async def create(
         session.add(new_vps)
         await session.commit()
         await session.refresh(new_vps)
-        return new_vps
+
+    vps = await get_by_id(new_vps.id)
+    return vps
 
 
 async def update_status(vps_id: int, new_status: VPSStatus) -> None:

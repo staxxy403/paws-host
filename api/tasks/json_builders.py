@@ -5,7 +5,7 @@ from database.core import VPS
 INCUS_INSTANCE_TYPE = os.getenv('INCUS_INSTANCE_TYPE', 'virtual-machine')
 
 
-def vm_create_payload(vps: VPS, cloud_init_yaml: str = '') -> dict[str,str]:
+def vm_create_payload(vps: VPS, user_data_yaml: str, network_data_yaml: str) -> dict[str,str]:
     json = {
       'name': vps.incus_name,
       'type': INCUS_INSTANCE_TYPE,
@@ -21,8 +21,8 @@ def vm_create_payload(vps: VPS, cloud_init_yaml: str = '') -> dict[str,str]:
       'config': {
         'limits.cpu': vps.tariff.cpu_cores,
         'limits.memory': f'{vps.tariff.ram_gb}GiB',
-        'security.secureboot': 'false',
-        'user.user-data': cloud_init_yaml
+        'cloud-init.user-data': user_data_yaml,
+        'cloud-init.network-config': network_data_yaml
       },
       'devices': {
         'root': {

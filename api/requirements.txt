@@ -6,3 +6,5 @@ httpx
 uvicorn
 alembic
 arq
+coolname
+jinja2

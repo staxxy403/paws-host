@@ -11,4 +11,5 @@ alembic
 redis
 arq
 
-aiogram
+coolname
+jinja2
