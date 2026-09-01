@@ -1,4 +1,4 @@
-from fastapi import APIRouter()
+from fastapi import APIRouter
 from . import vps
 
 routes_router = APIRouter()

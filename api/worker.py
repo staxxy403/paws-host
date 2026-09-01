@@ -1,8 +1,8 @@
 import asyncio
+
+from api.tasks import task_create_vm
 from shared.configs.redis import arq_redis_settings
 
-async def task_create_vm(ctx, vps_id: int):
-    ...
 
 class WorkerSettings:
     functions = [task_create_vm]

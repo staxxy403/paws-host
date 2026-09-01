@@ -1,7 +1,12 @@
 import uuid
 
 from shared.enums import VPSStatus
-from shared.models import BaseSchema, IPAddressRead, LocationRead, OSRead, TariffRead
+
+from .base import BaseSchema
+from .ip import IPAddressRead
+from .locations import LocationRead
+from .os import OSRead
+from .tariffs import TariffRead
 
 
 class VPSRead(BaseSchema):

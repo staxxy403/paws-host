@@ -95,6 +95,10 @@ class VPS(Base):
     def location(self) -> 'Location':
         return self.node.location
 
+    @property
+    def incus_name(self) -> str:
+        return f'vps-{self.id}'
+
 class OSFamily(Base):
     __tablename__ = 'os_families'
 

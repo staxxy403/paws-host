@@ -34,8 +34,6 @@ async def api_buy_vps(
         os_id=body.os_id,
         months=body.months
     )
-
-    await arq.enqueue_job('task_create_vm', str(vps.id))
     return success_response(VPSRead.model_validate(vps))
 
 

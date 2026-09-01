@@ -1,6 +1,7 @@
 import time
 import uuid
 
+from arq import ArqRedis
 from database.logic import vps as vps_logic
 from database.logic import finance as finance_logic
 from database.logic import network as network_logic
@@ -28,7 +29,7 @@ async def get_list_vps_logic(user_id: uuid.UUID) -> VPSListResponse:
     )
 
 
-async def buy_vps_logic(user_id: uuid.UUID, tariff_id: int, location_id: int, os_id: int, months: int) -> VPS:
+async def buy_vps_logic(user_id: uuid.UUID, tariff_id: int, location_id: int, os_id: int, months: int, arq: ArqRedis) -> VPS:
     tariff = await tariff_logic.get_by_id(tariff_id=tariff_id, show_only_active=True)
     if not tariff:
         raise HTTPException(400, f'Tariff {tariff_id} not found or not available for purchase')
@@ -70,4 +71,5 @@ async def buy_vps_logic(user_id: uuid.UUID, tariff_id: int, location_id: int, os
         expire_at=expire_at,
     )
 
+    await arq.enqueue_job('task_create_vm', vps_id=str(vps.id), paid_amount=total_price, _job_id=f'create-vps-{vps.id}')
     return vps
