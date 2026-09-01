@@ -6,6 +6,7 @@ class VPSStatus(Enum):
     SUSPENDED = 'suspended'
     CREATING = 'creating'
     DELETED = 'deleted'
+    ERROR = 'error'
 
 class TransactionType(Enum):
     # Topups
