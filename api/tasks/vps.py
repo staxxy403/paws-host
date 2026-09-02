@@ -7,11 +7,11 @@ from arq import Retry
 
 from jinja2 import Environment, FileSystemLoader
 
-from api.tasks.json_builders import vm_create_payload
+from api.tasks.json_builders import vm_create_payload, vm_action_payload
 from api.utils import IncusClient
 from database.logic import finance
 from database.logic import vps as vps_logic
-from shared.enums import VPSStatus
+from shared.enums import VPSStatus, VPSAction
 from shared.exceptions import IncusNodeUnreachableError, IncusOperationError
 
 logger = logging.getLogger(__name__)
@@ -65,4 +65,29 @@ async def task_create_vm(ctx, vps_id: uuid.UUID, paid_amount: int):
         logger.error(f'Node {vps.node_id} unreachable after 3 retries')
         await vps_logic.update_status(vps_id, VPSStatus.ERROR)
         await finance.credit_user(user_id=vps.user_id, amount=paid_amount)
+        return
+
+
+async def task_action_vm(ctx, vps_id: uuid.UUID, action: str, force: bool):
+    vps = await vps_logic.get_by_id(vps_id)
+
+    if not vps or vps.status != VPSStatus.ACTIVE:
+        logger.warning(f'VPS {vps_id} not found or not in "ACTIVE" status')
+        return
+
+    try:
+        async with IncusClient(node=vps.node) as incus:
+            res = await incus.request('PUT', f'/instances/{vps.incus_name}/state', json=vm_action_payload(action=action, force=force))
+            operation = res.get('operation')
+            if operation:
+                await incus.wait_operation(operation)
+
+    except IncusOperationError as e:
+        logger.error(f'Error while {action} instance: {e}')
+        return
+
+    except IncusNodeUnreachableError:
+        if ctx['job_try'] < 3:
+            raise Retry(defer=20)
+        logger.error(f'Node {vps.node_id} unreachable after 3 retries')
         return

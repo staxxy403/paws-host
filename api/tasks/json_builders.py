@@ -1,6 +1,7 @@
 import os
 
 from database.core import VPS
+from shared.enums import VPSAction
 
 INCUS_INSTANCE_TYPE = os.getenv('INCUS_INSTANCE_TYPE', 'virtual-machine')
 
@@ -38,5 +39,15 @@ def vm_create_payload(vps: VPS, user_data_yaml: str, network_data_yaml: str) -> 
           'ipv4.address': vps.ip_address.ip
         }
       }
+    }
+    return json
+
+
+def vm_action_payload(action: str, force: bool) -> dict[str,str]:
+    json = {
+        'action': action,
+        'timeout': 30,
+        'force': force,
+        'stateful': False
     }
     return json

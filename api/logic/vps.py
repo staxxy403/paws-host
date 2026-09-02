@@ -13,8 +13,12 @@ from database.logic import os as os_logic
 from database.core import VPS
 
 from fastapi import HTTPException
-from shared.models import VPSListResponse
+
+from api.utils import IncusClient
+from shared.enums import VPSAction
+from shared.models import VPSListResponse, VPSStateRead, VPSRead
 from shared.models.responses import success_response
+from shared.models import VPSLiveState
 
 SECONDS_IN_MONTH = 30 * 24 * 60 * 60
 
@@ -73,3 +77,31 @@ async def buy_vps_logic(user_id: uuid.UUID, tariff_id: int, location_id: int, os
 
     await arq.enqueue_job('task_create_vm', vps_id=str(vps.id), paid_amount=total_price, _job_id=f'create-vps-{vps.id}')
     return vps
+
+
+async def get_vps_state_logic(vps: VPS) -> VPSStateRead:
+    async with IncusClient(node=vps.node) as incus:
+        res = await incus.request('GET', f'/instances/{vps.incus_name}/state')
+        meta = res.get('metadata', {})
+
+        total_ram_mb = vps.tariff.ram_gb * 1024
+        ram_usage_bytes = meta.get('memory', {}).get('usage', 0)
+        ram_usage_mb = round(ram_usage_bytes / (1024 * 1024))
+
+        ram_percent = round((ram_usage_mb / total_ram_mb) * 100, 1) if total_ram_mb > 0 else 0.0
+        status = meta.get('status', 'Unknown')
+
+        vps_dict = VPSRead.model_validate(vps).model_dump()
+
+        state = VPSLiveState(
+            status=status,
+            ram_usage=ram_usage_mb,
+            ram_total=total_ram_mb,
+            ram_percent=ram_percent,
+            ip=vps.ip_address.ip,
+        )
+
+        return VPSStateRead(
+            **vps_dict,
+          state=state
+        )

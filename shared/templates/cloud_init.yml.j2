@@ -16,6 +16,13 @@ chpasswd:
       password: "{{ root_password }}"
       type: text
 
+write_files:
+  - path: /etc/ssh/sshd_config.d/99-root-login.conf
+    permissions: '0644'
+    content: |
+      PermitRootLogin yes
+      PasswordAuthentication yes
+
 ssh_pwauth: true
 disable_root: false
 
@@ -34,3 +41,6 @@ packages:
   - openssh-server
   - curl
   - sudo
+
+runcmd:
+  - systemctl try-reload-or-restart ssh.socket sshd.service ssh.service || true

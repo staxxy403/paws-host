@@ -1,6 +1,8 @@
 import uuid
 
-from shared.enums import VPSStatus
+from database.core import VPS
+from shared.enums import VPSStatus, VPSAction
+from sqlalchemy.sql.expression import false
 
 from .base import BaseSchema
 from .ip import IPAddressRead
@@ -32,3 +34,17 @@ class VPSPurchaseRequest(BaseSchema):
     location_id: int
     os_id: int
     months: int
+
+class VPSActionRequest(BaseSchema):
+    action: VPSAction
+    force: bool | None = False
+
+class VPSLiveState(BaseSchema):
+    status: str
+    ram_usage: int
+    ram_total: int
+    ram_percent: float
+    ip: str
+
+class VPSStateRead(VPSRead):
+    state: VPSLiveState
