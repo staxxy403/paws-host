@@ -1,8 +1,6 @@
 version: 2
 ethernets:
-  eth0:
-    match:
-      name: "en*"
+  enp5s0:
     addresses:
       - {{ ip_address }}/32
     routes:

@@ -1,0 +1,18 @@
+# This file is generated automatically by the hosting panel
+# Do NOT edit manually
+# Any changes will be overwritten after IP-address change
+
+[connection]
+id=hosting-managed-enp5s0
+type=ethernet
+interface-name=enp5s0
+autoconnect=true
+
+[ipv4]
+method=manual
+address1={{ ip_address }}/32,169.254.0.1
+route1=0.0.0.0/0,169.254.0.1
+dns=1.1.1.1;8.8.8.8;
+
+[ipv6]
+method=disabled

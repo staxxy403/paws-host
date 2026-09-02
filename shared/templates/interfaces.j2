@@ -1,0 +1,10 @@
+# This file is generated automatically by the hosting panel
+# Do NOT edit manually
+# Any changes will be overwritten after IP-address change
+
+auto enp5s0
+iface enp5s0 inet static
+    address {{ ip_address }}/32
+    up ip route replace 169.254.0.1 dev enp5s0
+    up ip route replace default via 169.254.0.1
+    dns-nameservers 1.1.1.1 8.8.8.8

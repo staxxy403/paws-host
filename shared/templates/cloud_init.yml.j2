@@ -28,5 +28,9 @@ users:
 {% endfor %}
 {% endif %}
 
-package_update: false
+package_update: true
 package_upgrade: false
+packages:
+  - openssh-server
+  - curl
+  - sudo
