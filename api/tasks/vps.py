@@ -9,7 +9,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from api.tasks.json_builders import vm_create_payload, vm_action_payload
 from api.utils import IncusClient
-from database.logic import finance
+from database.logic import finance, network
 from database.logic import vps as vps_logic
 from shared.enums import VPSStatus, VPSAction
 from shared.exceptions import IncusNodeUnreachableError, IncusOperationError
@@ -42,16 +42,10 @@ async def task_create_vm(ctx, vps_id: uuid.UUID, paid_amount: int):
 
     try:
         async with IncusClient(node=vps.node) as incus:
-            res = await incus.request(
-                'POST', '/instances',
+            await incus.request(
+                'POST', '/instances', wait=True,
                 json = vm_create_payload(vps=vps, user_data_yaml=user_data_yaml, network_data_yaml=network_yaml)
             )
-            operation = res.get('operation')
-
-            if operation:
-                logger.debug(f'operation_id: {operation}')
-                await incus.wait_operation(operation)
-                await vps_logic.update_status(vps.id, VPSStatus.ACTIVE)
 
     except IncusOperationError as e:
         logger.error(f'Error while creating instance: {e}')
@@ -77,13 +71,34 @@ async def task_action_vm(ctx, vps_id: uuid.UUID, action: str, force: bool):
 
     try:
         async with IncusClient(node=vps.node) as incus:
-            res = await incus.request('PUT', f'/instances/{vps.incus_name}/state', json=vm_action_payload(action=action, force=force))
-            operation = res.get('operation')
-            if operation:
-                await incus.wait_operation(operation)
+            await incus.request('PUT', f'/instances/{vps.incus_name}/state', wait=True, json=vm_action_payload(action=action, force=force))
 
     except IncusOperationError as e:
         logger.error(f'Error while {action} instance: {e}')
+        return
+
+    except IncusNodeUnreachableError:
+        if ctx['job_try'] < 3:
+            raise Retry(defer=20)
+        logger.error(f'Node {vps.node_id} unreachable after 3 retries')
+        return
+
+
+async def task_delete_vm(ctx, vps_id: uuid.UUID):
+    vps = await vps_logic.get_by_id(vps_id)
+
+    if not vps or vps.status not in (VPSStatus.ACTIVE, VPSStatus.ERROR):
+        logger.warning(f'VPS {vps_id} not found or not in "ACTIVE, ERROR" status')
+        return
+
+    try:
+        async with IncusClient(node=vps.node) as incus:
+            await incus.request('DELETE', f'/instances/{vps.incus_name}', wait=True)
+        await network.release_ip(ip_id=vps.ip_address.id)
+        await vps_logic.update_status(vps_id=vps.id, new_status=VPSStatus.DELETED)
+
+    except IncusOperationError as e:
+        logger.error(f'Error while delete instance: {e}')
         return
 
     except IncusNodeUnreachableError:

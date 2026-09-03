@@ -33,7 +33,7 @@ class IncusClient:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.client.aclose()
 
-    async def request(self, method: str, path: str, **kwargs) -> dict:
+    async def request(self, method: str, path: str, wait: bool = False, **kwargs) -> dict:
         '''Base Incus request. Checks response["type"] and HTTP status-codes by Incus specification'''
         params = kwargs.pop('params', {})
         if self.project != 'default' and 'project' not in params:
@@ -55,6 +55,8 @@ class IncusClient:
             raise IncusError(f'Incus API Error [{err_code}]: {err_msg}')
 
         data = res.json()
+        if wait and (op_url := data.get('operation')):
+            return await self.wait_operation(op_url)
         return data
 
     async def wait_operation(self, operation_path_or_url: str, timeout: float = 300.0) -> dict:

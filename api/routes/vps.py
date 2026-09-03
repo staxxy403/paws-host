@@ -62,4 +62,7 @@ async def api_delete_vps(
     vps: VPS = Depends(valid_vps),
     arq: ArqRedis = Depends(get_arq_pool),
 ):
-    ...
+    job = await arq.enqueue_job('task_delete_vm', vps_id=str(vps.id), _job_id=f'action-vps-{vps.id}')
+    if not job:
+        raise HTTPException(409, 'Worker is busy by another operation with this instance')
+    return success_response('queued')
