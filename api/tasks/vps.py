@@ -46,6 +46,7 @@ async def task_create_vm(ctx, vps_id: uuid.UUID, paid_amount: int):
                 'POST', '/instances', wait=True,
                 json = vm_create_payload(vps=vps, user_data_yaml=user_data_yaml, network_data_yaml=network_yaml)
             )
+            await vps_logic.update_status(vps.id, VPSStatus.ACTIVE)
 
     except IncusOperationError as e:
         logger.error(f'Error while creating instance: {e}')
@@ -93,9 +94,14 @@ async def task_delete_vm(ctx, vps_id: uuid.UUID):
 
     try:
         async with IncusClient(node=vps.node) as incus:
+            try:
+                await incus.request('PUT', f'/instances/{vps.incus_name}/state', wait=True, json=vm_action_payload(action='stop', force=True))
+            except Exception as e:
+                logger.error(f'Error while stop instance: {e}')
+
             await incus.request('DELETE', f'/instances/{vps.incus_name}', wait=True)
-        await network.release_ip(ip_id=vps.ip_address.id)
-        await vps_logic.update_status(vps_id=vps.id, new_status=VPSStatus.DELETED)
+            await network.release_ip(ip_id=vps.ip_address.id)
+            await vps_logic.update_status(vps_id=vps.id, new_status=VPSStatus.DELETED)
 
     except IncusOperationError as e:
         logger.error(f'Error while delete instance: {e}')

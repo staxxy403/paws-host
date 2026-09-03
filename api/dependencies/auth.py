@@ -6,6 +6,7 @@ from fastapi import Depends, Header, HTTPException
 from database.core import VPS, User
 from database.logic import user as user_logic
 from database.logic import vps as vps_logic
+from shared.enums import VPSStatus
 
 API_SECRET_KEY = os.getenv('API_SECRET_KEY')
 if not API_SECRET_KEY:
@@ -29,7 +30,7 @@ async def valid_vps(vps_id: uuid.UUID, user: User = Depends(valid_user)) -> VPS:
     '''Get VPS of authenticated user'''
     vps = await vps_logic.get_by_id(vps_id)
 
-    if not vps or vps.user_id != user.id:
+    if not vps or vps.user_id != user.id or vps.status in (VPSStatus.DELETED,):
         raise HTTPException(status_code=404, detail="VPS not found")
 
     return vps
